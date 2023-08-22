@@ -1,0 +1,8 @@
+{
+    "mongoConnectionString": "mongodb://localhost:27017",
+    "redisConfiguration": {
+        "hosts": "localhost:6379",
+        "password": ""
+    },
+    "experimentationServiceUrl": "http://e13n-service.moj.internal"
+}
