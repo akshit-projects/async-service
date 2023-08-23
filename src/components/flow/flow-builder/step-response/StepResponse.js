@@ -2,6 +2,7 @@ import { CircularProgress } from "@material-ui/core";
 import React, { useState } from "react";
 import SuccessModal from "./SuccessModal";
 import ErrorResponse from "./ErrorResponse";
+import constants from "../../../../constants/constants";
 
 export default function StepResponse(props) {
   const state = props.state;
@@ -28,9 +29,9 @@ export default function StepResponse(props) {
   }
 
   let render;
-  if (status === "PROGRESS") {
+  if (status === constants.FLOW_RESPONSE_STATES.PROGRESS) {
     render = <CircularProgress className="step-status" size={18} />;
-  } else if (status === "SUCCESS") {
+  } else if (status === constants.FLOW_RESPONSE_STATES.SUCCESS) {
     render = (
         <>
         <i className="material-icons step-status" onClick={click}>
@@ -39,7 +40,7 @@ export default function StepResponse(props) {
         <SuccessModal isModalOpen={isModalOpen} closeRequest={closeRequest} value={response} />
       </>
     );
-  } else if (status === "ERROR") {
+  } else if (status === constants.FLOW_RESPONSE_STATES.ERROR) {
     render = <>
         <i className="material-icons step-status close" onClick={click}>close</i>
         <ErrorResponse isModalOpen={isModalOpen} closeRequest={closeRequest} response={response} />

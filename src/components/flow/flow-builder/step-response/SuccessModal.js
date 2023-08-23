@@ -2,6 +2,7 @@ import { TextField, Button } from "@mui/material";
 import React from "react";
 import Modal from "react-modal";
 
+Modal.setAppElement("#root");
 export default function SuccessModal(props) {
   const isModalOpen = props.isModalOpen;
   const closeRequest = props.closeRequest;

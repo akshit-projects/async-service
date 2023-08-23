@@ -9,7 +9,9 @@ import {
   Button,
 } from "@mui/material";
 import { InputLabel, makeStyles } from "@material-ui/core";
-const TYPE = "api";
+import constants from "../../../constants/constants";
+
+const TYPE = constants.FLOW_FUNCTIONS.API;
 const useStyles = makeStyles((theme) => ({
   formContainer: {
     marginTop: theme.spacing(1),
@@ -74,7 +76,7 @@ const APIStep = (props) => {
               className={classes.inputField}
             />
           </Grid>
-          {stepProps[TYPE].method !== "GET" && (
+          {stepProps[TYPE].method === "POST" || stepProps[TYPE].method === "PUT" && (
             <Grid item xs={12}>
               <TextField
                 label="Body"
@@ -99,9 +101,6 @@ const APIStep = (props) => {
             />
           </Grid>
         </Grid>
-        {/* <Button variant="contained" color="primary" sx={{ marginTop: "8px" }}>
-          Submit
-        </Button> */}
       </form>
     </Container>
   );

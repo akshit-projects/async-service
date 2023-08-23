@@ -15,6 +15,7 @@ import {
   Fab,
   Alert,
 } from "@mui/material";
+import constants from "../../constants/constants";
 
 function Flows() {
   const [data, setData] = useState([]);
@@ -25,7 +26,7 @@ function Flows() {
   useEffect(() => {
     const getFlows = async () => {
       const opts = {
-        url: "http://localhost:3000/api/v1/flow",
+        url: `${constants.BACKEND_URL}/api/v1/flow`,
         method: "GET",
       };
       await axios(opts)
@@ -34,7 +35,7 @@ function Flows() {
           setError();
         })
         .catch((err) => {
-          if (err.response?.status === 429) {
+          if (err.response?.status === constants.HTTP_STATUS_RATE_LIMIT_EXCEEDED) {
             setError("Please wait before retrying");
           } else {
             setError(err.message);
@@ -48,7 +49,7 @@ function Flows() {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const handleRowClick = (id) => {
-    navigate(`/flow/${id}`);
+    navigate(`${constants.PATHS.API_PREFIX}/${id}`);
   };
 
   return (
@@ -64,7 +65,7 @@ function Flows() {
           />
         </Grid>
         <Grid item xs={8} style={{ textAlign: "right" }}>
-          <Fab color="primary" aria-label="Add" component={Link} to="/flow/new">
+          <Fab color="primary" aria-label="Add" component={Link} to={constants.PATHS.FLOWS}>
             <i className="material-icons fs-4">add</i>
           </Fab>
         </Grid>

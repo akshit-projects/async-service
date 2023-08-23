@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button } from '@material-ui/core';
+import constants from '../../constants/constants';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,13 +32,10 @@ function Navbar() {
       <AppBar position="static" style={{ backgroundColor: '#ffffff', color: '#000000', boxShadow: 'none' }}>
         <Toolbar>
           <Typography className={classes.title}>
-            Helper Akshit
+            Akshit Helper
           </Typography>
           <Button color="inherit" className={classes.linkButton}>
-            <Link to="/flow">Flow</Link>
-          </Button>
-          <Button color="inherit" className={classes.linkButton}>
-          <Link to="/experiment">Experiment</Link>
+            <Link to={constants.PATHS.FLOWS}>Flow</Link>
           </Button>
         </Toolbar>
       </AppBar>

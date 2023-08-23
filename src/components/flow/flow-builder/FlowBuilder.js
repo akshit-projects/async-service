@@ -7,6 +7,7 @@ import FlowStep from "./FlowStep";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import StepResponse from "./step-response/StepResponse";
+import constants from "../../../constants/constants";
 
 Modal.setAppElement("#root");
 
@@ -15,24 +16,23 @@ const WorkflowBuilder = () => {
   const [steps, setSteps] = useState([]);
   const [selectedStep, setSelectedStep] = useState(null);
   const [error, setError] = useState(false);
-  const [flowName, setFlowName] = useState("Untitled");
+  const [flowName, setFlowName] = useState(constants.DEFAULT_FLOW_NAME);
   const [disableFlowActions, setDisableFlowActions] = useState(false);
   const navigate = useNavigate();
   const [isUpdate, setIsUpdate] = useState(false);
 
   useEffect(() => {
-    const pathArr = location.pathname.split('/');
-    if (pathArr[2] != 'new') {
+    const pathArr = location.pathname.split("/");
+    if (pathArr[2] !== constants.FLOW_NEW_PATH_SUFFIX) {
       const flowId = pathArr[2];
       setIsUpdate(true);
       const options = {
-        url: `http://localhost:3000/api/v1/flow/${flowId}`,
+        url: `${constants.BACKEND_URL}/api/v1/flow/${flowId}`,
       };
       axios(options)
         .then((resp) => {
           const data = resp.data;
           const steps = data.steps;
-          console.log(steps);
           setFlowName(data.name);
           const flowSteps = steps.map((step) => {
             return {
@@ -48,7 +48,7 @@ const WorkflowBuilder = () => {
           setSteps(flowSteps);
         })
         .catch((err) => {
-          setError('Invaild flow id');
+          setError("Invaild flow id");
           setDisableFlowActions(true);
         });
     }
@@ -80,16 +80,18 @@ const WorkflowBuilder = () => {
   };
 
   const resetStepsStatus = () => {
-    console.log("here");
     steps.forEach((step, idx) => {
       console.log(step);
-      if (step.state.status === "PROGRESS") updateStep(idx, "state", {});
+      if (step.state.status === constants.FLOW_RESPONSE_STATES.PROGRESS)
+        updateStep(idx, "state", {});
     });
   };
 
   const getFlowBody = () => {
     const stepsPayload = steps.map((step, idx) => {
-      updateStep(idx, "state", { status: "PROGRESS" });
+      updateStep(idx, "state", {
+        status: constants.FLOW_RESPONSE_STATES.PROGRESS,
+      });
       return {
         name: `Step: ${idx + 1}`,
         function: step.functionType,
@@ -111,7 +113,7 @@ const WorkflowBuilder = () => {
     const body = getFlowBody();
     console.log(body);
     const options = {
-      url: "http://localhost:3000/api/v1/flow",
+      url: `${constants.BACKEND_URL}/api/v1/flow`,
       method: "POST",
       data: body,
       headers: {
@@ -121,7 +123,7 @@ const WorkflowBuilder = () => {
     axios(options)
       .then((res) => {
         console.log(res.data);
-        navigate("/flow");
+        navigate(constants.PATHS.FLOWS);
       })
       .catch((err) => {
         console.error(err);
@@ -137,7 +139,7 @@ const WorkflowBuilder = () => {
     const body = getFlowBody();
     console.log(body);
     const options = {
-      url: "http://localhost:3000/api/v1/flow",
+      url: `${constants.BACKEND_URL}/api/v1/flow`,
       method: "PUT",
       data: body,
       headers: {
@@ -147,7 +149,7 @@ const WorkflowBuilder = () => {
     axios(options)
       .then((res) => {
         console.log(res.data);
-        navigate("/flow");
+        navigate(constants.PATHS.FLOWS);
       })
       .catch((err) => {
         console.error(err);
@@ -161,41 +163,41 @@ const WorkflowBuilder = () => {
     setError();
     setDisableFlowActions(true);
     const body = getFlowBody();
-    console.log(body);
-    // create a websocket coonection
-    const socket = new WebSocket("ws://localhost:3000/api/v1/flow/run");
+    const socket = new WebSocket(`${constants.WS_BACKEND_URL}/api/v1/flow/run`);
     socket.onopen = () => {
       socket.send(body); // send the body
     };
     socket.onmessage = (msg) => {
       try {
         const data = JSON.parse(msg.data);
-        console.log(data, steps);
-        if (data.status === "ERROR" && !data.id) {
-          // most probably validation error
+        // most probably validation error
+        if (data.status === constants.FLOW_RESPONSE_STATES.ERROR && !data.id) {
           setError(data.response.error);
           setDisableFlowActions(false);
+          socket.close();
           return;
-        } else if (data.status === "ERROR") {
-            console.log(data);
+        } else if (data.status === constants.FLOW_RESPONSE_STATES.ERROR) {
+          // id is present, so this is an step
           const stepIdx = steps.findIndex((step) => {
             return step.id === data.id;
           });
           if (stepIdx !== -1) {
             updateStep(stepIdx, "state", {
-              status: "ERROR",
+              status: constants.FLOW_RESPONSE_STATES.ERROR,
               response: data.response,
             });
           } else {
             setError("Invalid state, please try again.");
           }
+          socket.close();
         } else {
+          // a successful step
           const stepIdx = steps.findIndex((step) => {
             return step.id === data.id;
           });
           if (stepIdx !== -1) {
             updateStep(stepIdx, "state", {
-              status: "SUCCESS",
+              status: constants.FLOW_RESPONSE_STATES.SUCCESS,
               response: data.response,
             });
           } else {
@@ -203,10 +205,10 @@ const WorkflowBuilder = () => {
           }
         }
       } catch (err) {
-        console.log("Parse error", err);
         setError("An unknown error occurred. Please contact admin.");
       }
     };
+
     socket.onclose = () => {
       resetStepsStatus();
       setDisableFlowActions(false);
@@ -273,7 +275,7 @@ const WorkflowBuilder = () => {
               onClick={isUpdate ? updateFlow : saveFlow}
               disabled={disableFlowActions}
             >
-              {isUpdate ? 'Upd' : 'Save' } Flow
+              {isUpdate ? "Upd" : "Save"} Flow
             </Button>
           </Grid>
         </Grid>
