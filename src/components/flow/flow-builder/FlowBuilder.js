@@ -19,13 +19,13 @@ const WorkflowBuilder = () => {
   const [flowName, setFlowName] = useState(constants.DEFAULT_FLOW_NAME);
   const [disableFlowActions, setDisableFlowActions] = useState(false);
   const navigate = useNavigate();
-  const [isUpdate, setIsUpdate] = useState(false);
+  const [flowId, setFlowId] = useState("");
 
   useEffect(() => {
     const pathArr = location.pathname.split("/");
     if (pathArr[2] !== constants.FLOW_NEW_PATH_SUFFIX) {
       const flowId = pathArr[2];
-      setIsUpdate(true);
+      setFlowId(flowId);
       const options = {
         url: `${constants.BACKEND_URL}/api/v1/flow/${flowId}`,
       };
@@ -81,7 +81,6 @@ const WorkflowBuilder = () => {
 
   const resetStepsStatus = () => {
     steps.forEach((step, idx) => {
-      console.log(step);
       if (step.state.status === constants.FLOW_RESPONSE_STATES.PROGRESS)
         updateStep(idx, "state", {});
     });
@@ -99,10 +98,14 @@ const WorkflowBuilder = () => {
         id: step.id || uuidv4(),
       };
     });
-    const body = JSON.stringify({
+    const payload = {
       name: flowName,
       steps: stepsPayload,
-    });
+    };
+    if (flowId) {
+      payload.id = flowId;
+    }
+    const body = JSON.stringify(payload);
 
     return body;
   };
@@ -272,10 +275,10 @@ const WorkflowBuilder = () => {
           <Grid item xs={2}>
             <Button
               variant="contained"
-              onClick={isUpdate ? updateFlow : saveFlow}
+              onClick={flowId ? updateFlow : saveFlow}
               disabled={disableFlowActions}
             >
-              {isUpdate ? "Upd" : "Save"} Flow
+              {flowId ? "Upd" : "Save"} Flow
             </Button>
           </Grid>
         </Grid>
