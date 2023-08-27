@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	AddFlow(flow *Flow) (*string, error)
+	UpdateFlow(flow *Flow) error
 	ValidateSteps(flow *Flow) error
 	RunFlow(ch chan<- *StepResponse, flow *Flow) error
 	GetFlows() ([]Flow, error)
@@ -28,6 +29,16 @@ func (s *service) GetFlow(id string) (*Flow, error) {
 
 func (s *service) GetFlows() ([]Flow, error) {
 	return getFlows(s.app)
+}
+
+func (s *service) UpdateFlow(flow *Flow) error {
+	steps := flow.Steps
+	if err := validateSteps(steps); err != nil {
+		return err
+	}
+
+	flow.ModifiedAt = time.Now().Unix()
+	return updateFlow(s.app, flow)
 }
 
 func (s *service) AddFlow(flow *Flow) (*string, error) {

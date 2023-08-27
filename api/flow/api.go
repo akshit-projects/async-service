@@ -24,7 +24,39 @@ func RegisterRoutes(c fiber.Router, app app.App) {
 	c.Get("/flow/run", websocket.New(resource.runFlow))
 	c.Get("/flow/:id", resource.getFlow)
 	c.Post("/flow", resource.addFlow)
+	c.Put("/flow", resource.updateFlow)
 	c.Post("/flow/validate", resource.validateSteps)
+}
+
+func (r *resource) updateFlow(c *fiber.Ctx) error {
+	var flow *Flow
+	var err error
+	if flow, err = getFlowObject(c); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
+			Msg: "Unable to parse the request body",
+		})
+	}
+
+	existingFlow, err := r.service.GetFlow(flow.Id)
+	if flow.Id == "" || err != nil {
+		if errors.Is(err, fiber.ErrNotFound) {
+			return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
+				Msg: "Flow not found for the id",
+			})
+		}
+		return c.Status(http.StatusInternalServerError).JSON(&common_structs.HttpError{
+			Msg: err.Error(),
+		})
+	}
+
+	flow.CreatedAt = existingFlow.CreatedAt
+	if err = r.service.UpdateFlow(flow); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
+			Msg: err.Error(),
+		})
+	}
+
+	return c.SendStatus(http.StatusOK)
 }
 
 func (r *resource) getFlow(c *fiber.Ctx) error {
@@ -66,7 +98,9 @@ func (r *resource) addFlow(c *fiber.Ctx) error {
 
 	uid, err := r.service.AddFlow(flow)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(err.Error())
+		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
+			Msg: err.Error(),
+		})
 	}
 
 	return c.Status(http.StatusCreated).

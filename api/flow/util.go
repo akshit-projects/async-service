@@ -89,7 +89,6 @@ func getFlow(app app.App, id string) (*Flow, error) {
 	// get all the records
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		fmt.Println("Error here")
 		return nil, errors.New("Invalid flow id passed")
 	}
 
@@ -117,4 +116,31 @@ func getFlow(app app.App, id string) (*Flow, error) {
 	}
 
 	return &flow, nil
+}
+
+func updateFlow(app app.App, flow *Flow) error {
+	dbClient := app.GetMongoClient()
+	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
+
+	oid, err := primitive.ObjectIDFromHex(flow.Id)
+	if err != nil {
+		return errors.New("Invalid flow id passed")
+	}
+
+	flow.Id = ""
+	data, err := bson.Marshal(*flow)
+	if err != nil {
+		fmt.Println(err.Error())
+		return errors.New("Unable to update data")
+	}
+
+	filter := bson.D{
+		{Key: "_id", Value: oid},
+	}
+	result := coll.FindOneAndReplace(context.Background(), filter, data)
+	if result.Err() != nil {
+		return errors.New("Unable to update the flow data")
+	}
+
+	return nil
 }
