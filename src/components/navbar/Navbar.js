@@ -1,8 +1,9 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button } from '@material-ui/core';
 import constants from '../../constants/constants';
+import { checkLoginState, logout } from '../auth/auth-utils';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,6 +27,12 @@ const useStyles = makeStyles((theme) => ({
 
 function Navbar() {
   const classes = useStyles();
+  const navigate = useNavigate();
+
+  const cleanAndLogout = () => {
+    navigate('/login');
+    logout();
+  }
 
   return (
     <div className={classes.root}>
@@ -37,6 +44,9 @@ function Navbar() {
           <Button color="inherit" className={classes.linkButton}>
             <Link to={constants.PATHS.FLOWS}>Flow</Link>
           </Button>
+          {checkLoginState() && <Button color="inherit" onClick={cleanAndLogout} className={classes.linkButton}>
+            Logout
+          </Button>}
         </Toolbar>
       </AppBar>
     </div>

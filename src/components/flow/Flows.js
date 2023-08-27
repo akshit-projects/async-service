@@ -65,7 +65,7 @@ function Flows() {
           />
         </Grid>
         <Grid item xs={8} style={{ textAlign: "right" }}>
-          <Fab color="primary" aria-label="Add" component={Link} to={constants.PATHS.FLOWS}>
+          <Fab color="primary" aria-label="Add" component={Link} to={constants.PATHS.ADD_FLOW}>
             <i className="material-icons fs-4">add</i>
           </Fab>
         </Grid>
