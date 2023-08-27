@@ -34,6 +34,10 @@ function Navbar() {
     logout();
   }
 
+  window.addEventListener('userLogout', () => {
+    navigate('/login');
+  });
+
   return (
     <div className={classes.root}>
       <AppBar position="static" style={{ backgroundColor: '#ffffff', color: '#000000', boxShadow: 'none' }}>

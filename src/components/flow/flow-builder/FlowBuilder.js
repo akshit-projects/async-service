@@ -51,6 +51,9 @@ const WorkflowBuilder = () => {
           setError("Invaild flow id");
           setDisableFlowActions(true);
         });
+    } else {
+        addStep();
+        setSelectedStep(null);
     }
   }, [location]);
 
