@@ -107,6 +107,20 @@ func makeAPICall(app app.App, step *Step) *StepResponse {
 		}
 	}
 
+	if err = utils.CompareStrings(&stepValue.Response, &request.ExpectedResponse); err != nil {
+		return &StepResponse{
+			step.Name,
+			step.Function,
+			ERROR,
+			&StepError{
+				request.ExpectedResponse,
+				stepValue.Response,
+				"Response not matching",
+			},
+			step.Id,
+		}
+	}
+
 	return &StepResponse{
 		step.Name,
 		step.Function,
