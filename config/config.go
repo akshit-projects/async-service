@@ -11,14 +11,16 @@ import (
 )
 
 type RedisConfiguration struct {
-	Hosts string `json:"hosts"`
+	Hosts    string `json:"hosts"`
 	Password string `json:"password"`
 }
 
 type Configuration struct {
-	MongoConnectionString string `json:"mongoConnectionString"`
-	RedisConfiguration RedisConfiguration `json:"redisConfiguration"`
-	ExperimentationServiceURL string `json:"experimentationServiceUrl"`
+	MongoConnectionString     string             `json:"mongoConnectionString"`
+	RedisConfiguration        RedisConfiguration `json:"redisConfiguration"`
+	ExperimentationServiceURL string             `json:"experimentationServiceUrl"`
+	JWTSecret                 string             `json:"jwtSecret"`
+	GOOGLE_SIGN_IN_CLIENT_ID  string             `json:"googleSignInClientId"`
 }
 
 func NewConfig() *Configuration {
@@ -57,7 +59,7 @@ func readFile(fileName string) []byte {
 		log.Fatal(err.Error())
 	}
 	defer jsonFile.Close()
-	
+
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
 		log.Fatal("Unable to read config file")

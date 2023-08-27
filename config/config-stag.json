@@ -4,5 +4,7 @@
         "hosts": "localhost:6379",
         "password": ""
     },
-    "experimentationServiceUrl": "http://e13n-service.moj.internal"
+    "experimentationServiceUrl": "http://e13n-service.moj.internal",
+    "jwtSecret": "123",
+    "googleSignInClientId": ""
 }

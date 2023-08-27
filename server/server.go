@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/akshitbansal-1/async-testing/be/api/auth_apis"
 	experiment_apis "github.com/akshitbansal-1/async-testing/be/api/experiment"
 	flow_apis "github.com/akshitbansal-1/async-testing/be/api/flow"
 	teams_api "github.com/akshitbansal-1/async-testing/be/api/teams"
@@ -55,4 +56,5 @@ func registerApis(server *fiber.App, app app.App) {
 	teams_api.RegisterRoutes(v1Group, app)
 	experiment_apis.RegisterRoutes(v1Group, app)
 	flow_apis.RegisterRoutes(v1Group, app)
+	auth_apis.RegisterRoutes(v1Group, app)
 }
