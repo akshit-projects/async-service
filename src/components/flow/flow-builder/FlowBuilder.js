@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import StepResponse from "./step-response/StepResponse";
 import constants from "../../../constants/constants";
+import { validateSteps } from "./util";
 
 Modal.setAppElement("#root");
 
@@ -58,7 +59,7 @@ const WorkflowBuilder = () => {
   }, [location]);
 
   const addStep = () => {
-    setSteps([...steps, { functionType: "", id: uuidv4(), state: {} }]);
+    setSteps([...steps, { functionType: "", id: uuidv4(), state: {}, value: {} }]);
     setSelectedStep(steps.length);
   };
 
@@ -89,6 +90,17 @@ const WorkflowBuilder = () => {
     });
   };
 
+  const validateFlow = (flow) => {
+    const steps = flow.steps || [];
+    const error = validateSteps(steps);
+    if (error) {
+        setError(error.message);
+        return false;
+    }
+
+    return true;
+  }
+
   const getFlowBody = () => {
     const stepsPayload = steps.map((step, idx) => {
       updateStep(idx, "state", {
@@ -105,6 +117,11 @@ const WorkflowBuilder = () => {
       name: flowName,
       steps: stepsPayload,
     };
+    if (!validateFlow(payload)) {
+        setDisableFlowActions(false);
+        resetStepsStatus();
+        return null;
+    }
     if (flowId) {
       payload.id = flowId;
     }
@@ -117,6 +134,9 @@ const WorkflowBuilder = () => {
     resetStepsStatus();
     setDisableFlowActions(true);
     const body = getFlowBody();
+    if (!body) {
+        return;
+    }
     console.log(body);
     const options = {
       url: `${constants.BACKEND_URL}/api/v1/flow`,
@@ -143,7 +163,9 @@ const WorkflowBuilder = () => {
     resetStepsStatus();
     setDisableFlowActions(true);
     const body = getFlowBody();
-    console.log(body);
+    if (!body) {
+        return;
+    }
     const options = {
       url: `${constants.BACKEND_URL}/api/v1/flow`,
       method: "PUT",
