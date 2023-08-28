@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
+	"github.com/akshitbansal-1/async-testing/be/common_structs"
 )
 
 type Service interface {
@@ -11,7 +12,7 @@ type Service interface {
 	UpdateFlow(flow *Flow) error
 	ValidateSteps(flow *Flow) error
 	RunFlow(ch chan<- *StepResponse, flow *Flow) error
-	GetFlows() ([]Flow, error)
+	GetFlows(*common_structs.APIFilter) ([]Flow, error)
 	GetFlow(id string) (*Flow, error)
 }
 
@@ -27,8 +28,8 @@ func (s *service) GetFlow(id string) (*Flow, error) {
 	return getFlow(s.app, id)
 }
 
-func (s *service) GetFlows() ([]Flow, error) {
-	return getFlows(s.app)
+func (s *service) GetFlows(filter *common_structs.APIFilter) ([]Flow, error) {
+	return getFlows(s.app, filter)
 }
 
 func (s *service) UpdateFlow(flow *Flow) error {

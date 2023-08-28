@@ -7,10 +7,12 @@ import (
 	"log"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
+	"github.com/akshitbansal-1/async-testing/be/common_structs"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -38,13 +40,20 @@ func addFlow(app app.App, flow *Flow) (*string, error) {
 	return &id, nil
 }
 
-func getFlows(app app.App) ([]Flow, error) {
+func getFlows(app app.App, filter *common_structs.APIFilter) ([]Flow, error) {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
 
 	ctx := context.Background()
 	// get all the records
-	cursor, err := coll.Find(ctx, bson.M{})
+	mFilter := bson.M{}
+	for key, value := range filter.Filters {
+		mFilter[key] = value
+	}
+	cursor, err := coll.Find(ctx, mFilter, &options.FindOptions{
+		Limit: &filter.Limit,
+		Skip:  &filter.Skip,
+	})
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, errors.New("Unable to get flows from DB")

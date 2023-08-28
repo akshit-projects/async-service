@@ -114,6 +114,8 @@ func parseString(a *string) interface{} {
 		default:
 			val = val.(string)
 		}
+	} else {
+		val = *a
 	}
 
 	return val

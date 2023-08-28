@@ -3,6 +3,7 @@ package flow_apis
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
@@ -10,6 +11,11 @@ import (
 	"github.com/akshitbansal-1/async-testing/be/utils"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+const (
+	MAX_FLOW_LIMIT = 2
 )
 
 type resource struct {
@@ -77,7 +83,8 @@ func (r *resource) getFlow(c *fiber.Ctx) error {
 }
 
 func (r *resource) getFlows(c *fiber.Ctx) error {
-	flows, err := r.service.GetFlows()
+	filter := getFilter(c)
+	flows, err := r.service.GetFlows(filter)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(&common_structs.HttpError{
 			Msg: "Unable to get flows",
@@ -85,6 +92,20 @@ func (r *resource) getFlows(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(flows)
+}
+
+func getFilter(c *fiber.Ctx) *common_structs.APIFilter {
+	search := c.Query("search", "")
+	searchFilter := map[string]interface{}{
+		"name": bson.M{
+			"$regex": "(?i).*" + search + ".*",
+		},
+	}
+	limit := int64(math.Max(float64(c.QueryInt("limit", MAX_FLOW_LIMIT)), MAX_FLOW_LIMIT))
+	return &common_structs.APIFilter{
+		Filters: searchFilter,
+		Limit:   limit,
+	}
 }
 
 func (r *resource) addFlow(c *fiber.Ctx) error {
