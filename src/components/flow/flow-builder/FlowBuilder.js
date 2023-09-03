@@ -191,6 +191,9 @@ const WorkflowBuilder = () => {
     setError();
     setDisableFlowActions(true);
     const body = getFlowBody();
+    if (!body) {
+        return;
+    }
     const socket = new WebSocket(`${constants.WS_BACKEND_URL}/api/v1/flow/run`);
     socket.onopen = () => {
       socket.send(body); // send the body

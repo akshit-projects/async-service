@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import constants from "../../constants/constants";
 import CheckBox from "@mui/material/Checkbox";
+import AddSuiteModal from "../test-suite/AddSuiteModal";
 
 let timeoutId;
 function Flows() {
@@ -25,7 +26,8 @@ function Flows() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedFlows, setSelectedFlows] = useState([]);
+  const [suiteModal, setSuiteModal] = useState(false);
 
   useEffect(() => {
     const getFlows = async () => {
@@ -68,22 +70,27 @@ function Flows() {
     }, 1000);
   };
 
-  const handleCheckboxChange = (event, id) => {
+  const addTestSuite = (e) => {
+    setSuiteModal(true);
+    console.log(selectedFlows);
+  };
+
+  const handleCheckboxChange = (event, flow) => {
     if (event.stopPropagation) {
       event.stopPropagation();
     } else {
       event.cancelBubble = true;
     }
     if (event.target.checked) {
-      setSelectedRows([...selectedRows, id]);
+      setSelectedFlows([...selectedFlows, flow]);
     } else {
-      setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
+      setSelectedFlows(selectedFlows.filter((f) => f.id !== flow.id));
     }
   };
 
   return (
     <Container>
-      <Grid container spacing={2}>
+      <Grid container spacing={1} alignItems="center">
         <Grid item xs={4}>
           <TextField
             label="Search"
@@ -92,8 +99,26 @@ function Flows() {
             onChange={(e) => filterResults(e.target.value)}
           />
         </Grid>
-        <Grid item xs={8} style={{ textAlign: "right" }}>
-          <Fab color="primary" aria-label="Add" component={Link} to={constants.PATHS.ADD_FLOW}>
+        {selectedFlows.length ? (
+          <Grid xs={2} sx={{ verticalAlign: "middle" }}>
+            <Button variant="contained" onClick={addTestSuite}>
+              Create Test Suite
+            </Button>
+          </Grid>
+        ) : (
+          <></>
+        )}
+        <Grid
+          item
+          xs={6 + (selectedFlows.length ? 0 : 2)}
+          style={{ textAlign: "right" }}
+        >
+          <Fab
+            color="primary"
+            aria-label="Add"
+            component={Link}
+            to={constants.PATHS.ADD_FLOW}
+          >
             <i className="material-icons fs-4">add</i>
           </Fab>
         </Grid>
@@ -107,11 +132,11 @@ function Flows() {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-            <TableCell></TableCell>
-              <TableCell>Id</TableCell>
+              <TableCell width="10%"></TableCell>
+              <TableCell width="10%">Id</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Steps</TableCell>
-              <TableCell>Created At</TableCell>
+              <TableCell width="15%">Steps</TableCell>
+              <TableCell width="20%">Created At</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -123,13 +148,16 @@ function Flows() {
                   cursor: "pointer",
                 }}
               >
-                <TableCell>
+                <TableCell width="10%">
                   <CheckBox
-                    onChange={(event) => handleCheckboxChange(event, row.id)}
-                    checked={selectedRows.includes(row.id)}
+                    onChange={(event) => handleCheckboxChange(event, row)}
+                    checked={
+                      selectedFlows.findIndex((f) => f.id === row.id) !== -1
+                    }
                   />
                 </TableCell>
                 <TableCell
+                  width="20%"
                   component="th"
                   scope="row"
                   onClick={() => handleRowClick(row.id)}
@@ -143,7 +171,7 @@ function Flows() {
                 <TableCell onClick={() => handleRowClick(row.id)}>
                   {row.steps.length}
                 </TableCell>
-                <TableCell onClick={() => handleRowClick(row.id)}>
+                <TableCell width="20%" onClick={() => handleRowClick(row.id)}>
                   {new Date(parseInt(row.createdAt) * 1000).toLocaleString()}
                 </TableCell>
               </TableRow>
@@ -151,6 +179,12 @@ function Flows() {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddSuiteModal
+        isOpen={suiteModal}
+        flows={selectedFlows}
+        closeModal={() => setSuiteModal(false)}
+        handleCheckboxChange={handleCheckboxChange}
+      />
     </Container>
   );
 }

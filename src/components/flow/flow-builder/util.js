@@ -89,7 +89,7 @@ function validateHttpStep(step) {
     return methodValidationError;
   }
 
-  if (httpReq.method === "GET" && httpReq.body !== null) {
+  if (httpReq.method === "GET" && httpReq.body) {
     return new Error("Body can't go with GET method");
   } else if (httpReq.method !== "GET" && httpReq.body === null) {
     return new Error("Body is required for " + httpReq.method);
