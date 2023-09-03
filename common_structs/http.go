@@ -9,3 +9,8 @@ type APIFilter struct {
 	Filters map[string]interface{}
 	Skip    int64
 }
+
+type APIError struct {
+	Status int
+	Msg    string
+}

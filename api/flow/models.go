@@ -14,6 +14,7 @@ type Flow struct {
 	Steps      []Step `json:"steps"`
 	CreatedAt  int64  `json:"createdAt"`
 	ModifiedAt int64  `json:"modifiedAt"`
+	TeamId     string `json:"teamId"`
 }
 
 type Step struct {

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	MAX_FLOW_LIMIT = 2
+	MAX_FLOW_LIMIT = 10
 )
 
 type resource struct {
