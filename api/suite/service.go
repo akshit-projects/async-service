@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
@@ -37,6 +38,9 @@ func (s *service) AddSuite(suite *Suite) (*string, *common_structs.APIError) {
 		}
 	}
 
+	suite.Id = ""
+	suite.CreatedAt = time.Now().Unix()
+	suite.ModifiedAt = time.Now().Unix()
 	id, err := addSuite(s.app, suite)
 	if err != nil {
 		if errors.Is(err, fiber.ErrNotFound) {

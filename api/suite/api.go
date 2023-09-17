@@ -39,11 +39,14 @@ func (r *resource) getSuites(c *fiber.Ctx) error {
 
 func getFilter(c *fiber.Ctx) *common_structs.APIFilter {
 	search := c.Query("search", "")
-	searchFilter := map[string]interface{}{
-		"name": bson.M{
+	searchFilter := map[string]interface{}{}
+
+	if search != "" {
+		searchFilter["name"] = bson.M{
 			"$regex": "(?i).*" + search + ".*",
-		},
+		}
 	}
+
 	limit := int64(math.Max(float64(c.QueryInt("limit", MAX_SUITE_LIMIT)), MAX_SUITE_LIMIT))
 	return &common_structs.APIFilter{
 		Filters: searchFilter,

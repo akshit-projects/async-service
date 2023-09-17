@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math"
 	"net/http"
+	"strings"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
@@ -15,7 +16,7 @@ import (
 )
 
 const (
-	MAX_FLOW_LIMIT = 10
+	MAX_FLOW_LIMIT = 6
 )
 
 type resource struct {
@@ -83,7 +84,12 @@ func (r *resource) getFlow(c *fiber.Ctx) error {
 }
 
 func (r *resource) getFlows(c *fiber.Ctx) error {
-	filter := getFilter(c)
+	filter, err := getFilter(c)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(&common_structs.APIError{
+			Msg: err.Error(),
+		})
+	}
 	flows, err := r.service.GetFlows(filter)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(&common_structs.HttpError{
@@ -94,18 +100,32 @@ func (r *resource) getFlows(c *fiber.Ctx) error {
 	return c.JSON(flows)
 }
 
-func getFilter(c *fiber.Ctx) *common_structs.APIFilter {
+func getFilter(c *fiber.Ctx) (*common_structs.APIFilter, error) {
 	search := c.Query("search", "")
-	searchFilter := map[string]interface{}{
-		"name": bson.M{
+	searchFilter := map[string]interface{}{}
+
+	if search != "" {
+		searchFilter["name"] = bson.M{
 			"$regex": "(?i).*" + search + ".*",
-		},
+		}
 	}
+
+	if ids := c.Query("ids", ""); ids != "" {
+		fIds := strings.Split(ids, ",")
+		if oids, err := utils.MakeObjectIds(fIds); err != nil {
+			return nil, errors.New("Invalid flow ids")
+		} else {
+			searchFilter["_id"] = bson.M{
+				"$in": oids,
+			}
+		}
+	}
+
 	limit := int64(math.Max(float64(c.QueryInt("limit", MAX_FLOW_LIMIT)), MAX_FLOW_LIMIT))
 	return &common_structs.APIFilter{
 		Filters: searchFilter,
 		Limit:   limit,
-	}
+	}, nil
 }
 
 func (r *resource) addFlow(c *fiber.Ctx) error {

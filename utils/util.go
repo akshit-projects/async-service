@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func ParseInterface[T any](i interface{}, v *T) error {
@@ -119,4 +121,17 @@ func parseString(a *string) interface{} {
 	}
 
 	return val
+}
+
+func MakeObjectIds(ids []string) ([]primitive.ObjectID, error) {
+	objectIds := make([]primitive.ObjectID, len(ids))
+	for i, oid := range ids {
+		id, err := primitive.ObjectIDFromHex(oid)
+		if err != nil {
+			return nil, errors.New("Invalid object id passed -> " + oid)
+		}
+		objectIds[i] = id
+	}
+
+	return objectIds, nil
 }

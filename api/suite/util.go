@@ -9,6 +9,7 @@ import (
 	flow_apis "github.com/akshitbansal-1/async-testing/be/api/flow"
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
+	"github.com/akshitbansal-1/async-testing/be/utils"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -88,14 +89,9 @@ func checkFlowsExistence(app app.App, ids []string) error {
 	fCol := dbClient.Database(flow_apis.FLOW_DB_NAME).
 		Collection(flow_apis.FLOW_COLLECTION_NAME)
 
-	objectIds := make([]primitive.ObjectID, len(ids))
-
-	for i, oid := range ids {
-		id, err := primitive.ObjectIDFromHex(oid)
-		if err != nil {
-			return errors.New("Invalid object id passed -> " + oid)
-		}
-		objectIds[i] = id
+	objectIds, err := utils.MakeObjectIds(ids)
+	if err != nil {
+		return err
 	}
 	count, err := fCol.CountDocuments(context.Background(), bson.M{
 		"_id": bson.M{
