@@ -6,17 +6,22 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
 type App interface {
 	GetMongoClient() *mongo.Client
 	GetCacheClient() thirdparty.CacheClient
 	GetConfig() *config.Configuration
+	GetMessageBroker() thirdparty.MessageBroker
 }
 
 type app struct {
 	mongoClient *mongo.Client
 	cacheClient thirdparty.CacheClient
-	config *config.Configuration
+	config      *config.Configuration
+	broker      thirdparty.MessageBroker
+}
+
+func (app *app) GetMessageBroker() thirdparty.MessageBroker {
+	return app.broker
 }
 
 func (app *app) GetMongoClient() *mongo.Client {
@@ -27,7 +32,7 @@ func (app *app) GetCacheClient() thirdparty.CacheClient {
 	return app.cacheClient
 }
 
-func (app *app) GetConfig() *config.Configuration{
+func (app *app) GetConfig() *config.Configuration {
 	return app.config
 }
 
@@ -37,7 +42,7 @@ func NewApp(config *config.Configuration) App {
 	app.mongoClient = thirdparty.NewMongoClient(config.MongoConnectionString)
 	app.cacheClient = thirdparty.NewCacheClient(config.RedisConfiguration)
 	app.config = config
-
+	app.broker = thirdparty.InitBroker(config)
 
 	return app
 }

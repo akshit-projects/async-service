@@ -9,11 +9,12 @@ import (
 	experiment_apis "github.com/akshitbansal-1/async-testing/be/api/experiment"
 	"github.com/akshitbansal-1/async-testing/be/constants"
 	"github.com/akshitbansal-1/async-testing/be/utils"
+	"github.com/akshitbansal-1/async-testing/lib/structs"
 )
 
 var validMethods = [4]string{"GET", "POST", "PUT", "DELETE"}
 
-func validateSteps(steps []Step) error {
+func validateSteps(steps []structs.Step) error {
 	if len(steps) == 0 {
 		return errors.New("Minimum one step is required")
 	}
@@ -29,7 +30,7 @@ func validateSteps(steps []Step) error {
 	return nil
 }
 
-func validateStep(step *Step) error {
+func validateStep(step *structs.Step) error {
 	switch step.Function {
 	case constants.API_STEP:
 		return validateHttpStep(step)
@@ -47,7 +48,7 @@ func validateStep(step *Step) error {
 }
 
 // E13n variant override request block
-func validateOverrideVariant(step *Step) error {
+func validateOverrideVariant(step *structs.Step) error {
 	meta := step.Meta
 	var overrideReq experiment_apis.OverrideVariantRequest
 	if err := utils.ParseInterface[experiment_apis.OverrideVariantRequest](meta, &overrideReq); err != nil {
@@ -64,10 +65,10 @@ func validateOverrideVariant(step *Step) error {
 }
 
 // Pubsub purge validation block
-func validatePurgeSubscriptions(step *Step) error {
+func validatePurgeSubscriptions(step *structs.Step) error {
 	meta := step.Meta
-	var purgeRequest PurgeSubscriptionsRequest
-	if err := utils.ParseInterface[PurgeSubscriptionsRequest](meta, &purgeRequest); err != nil {
+	var purgeRequest structs.PurgeSubscriptionsRequest
+	if err := utils.ParseInterface[structs.PurgeSubscriptionsRequest](meta, &purgeRequest); err != nil {
 		return errors.New("Unable to get purge request data")
 	}
 
@@ -83,10 +84,10 @@ func validatePurgeSubscriptions(step *Step) error {
 }
 
 // Pubsub subscribe validation block
-func validatePubsubSubscribe(step *Step) error {
+func validatePubsubSubscribe(step *structs.Step) error {
 	meta := step.Meta
-	var subscribeRequest SubscribeRequest
-	if err := utils.ParseInterface[SubscribeRequest](meta, &subscribeRequest); err != nil {
+	var subscribeRequest structs.SubscribeRequest
+	if err := utils.ParseInterface[structs.SubscribeRequest](meta, &subscribeRequest); err != nil {
 		return errors.New("Unable to get subscribe request data")
 	}
 
@@ -102,10 +103,10 @@ func validatePubsubSubscribe(step *Step) error {
 }
 
 // Pubsub publish validation block
-func validatePubsubPublish(step *Step) error {
+func validatePubsubPublish(step *structs.Step) error {
 	meta := step.Meta
-	var publishRequest PublishRequest
-	if err := utils.ParseInterface[PublishRequest](meta, &publishRequest); err != nil {
+	var publishRequest structs.PublishRequest
+	if err := utils.ParseInterface[structs.PublishRequest](meta, &publishRequest); err != nil {
 		return errors.New("Unable to get publish request data")
 	}
 
@@ -124,10 +125,10 @@ func validatePubsubPublish(step *Step) error {
 }
 
 // HTTP validation block
-func validateHttpStep(step *Step) error {
+func validateHttpStep(step *structs.Step) error {
 	meta := step.Meta
-	var httpReq HTTPRequest
-	if err := utils.ParseInterface[HTTPRequest](meta, &httpReq); err != nil {
+	var httpReq structs.HTTPRequest
+	if err := utils.ParseInterface[structs.HTTPRequest](meta, &httpReq); err != nil {
 		return errors.New("Unable to get http request data")
 	}
 

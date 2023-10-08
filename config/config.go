@@ -15,12 +15,20 @@ type RedisConfiguration struct {
 	Password string `json:"password"`
 }
 
+type MessageBrokerConfig struct {
+	Brokers       string `json:"brokers"`
+	GroupId       string `json:"groupId"`
+	Topic         string `json:"topic"`
+	PullTimeoutMs int    `json:"pullTimeoutMS"`
+}
+
 type Configuration struct {
 	MongoConnectionString     string             `json:"mongoConnectionString"`
 	RedisConfiguration        RedisConfiguration `json:"redisConfiguration"`
 	ExperimentationServiceURL string             `json:"experimentationServiceUrl"`
 	JWTSecret                 string             `json:"jwtSecret"`
 	GOOGLE_SIGN_IN_CLIENT_ID  string             `json:"googleSignInClientId"`
+	KafkaConfiguration        MessageBrokerConfig `json:"kafka"`
 }
 
 func NewConfig() *Configuration {

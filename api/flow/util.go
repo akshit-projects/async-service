@@ -8,6 +8,7 @@ import (
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
+	"github.com/akshitbansal-1/async-testing/lib/structs"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,11 +17,13 @@ import (
 )
 
 const (
-	FLOW_DB_NAME         = "test"
-	FLOW_COLLECTION_NAME = "flow"
+	FLOW_DB_NAME              = "test"
+	FLOW_COLLECTION_NAME      = "flow"
+	EXECUTION_DB_NAME         = "test"
+	EXECUTION_COLLECTION_NAME = "execution"
 )
 
-func addFlow(app app.App, flow *Flow) (*string, error) {
+func addFlow(app app.App, flow *structs.Flow) (*string, error) {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
 
@@ -40,7 +43,7 @@ func addFlow(app app.App, flow *Flow) (*string, error) {
 	return &id, nil
 }
 
-func getFlows(app app.App, filter *common_structs.APIFilter) ([]Flow, error) {
+func getFlows(app app.App, filter *common_structs.APIFilter) ([]structs.Flow, error) {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
 
@@ -60,9 +63,9 @@ func getFlows(app app.App, filter *common_structs.APIFilter) ([]Flow, error) {
 	}
 
 	defer cursor.Close(ctx)
-	flows := []Flow{}
+	flows := []structs.Flow{}
 	for cursor.Next(ctx) {
-		var flow Flow
+		var flow structs.Flow
 		err := cursor.Decode(&flow)
 		if err != nil {
 			log.Println("Decode error. Unable to decode data.", err)
@@ -90,7 +93,7 @@ func getFlows(app app.App, filter *common_structs.APIFilter) ([]Flow, error) {
 	return flows, nil
 }
 
-func getFlow(app app.App, id string) (*Flow, error) {
+func getFlow(app app.App, id string) (*structs.Flow, error) {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
 
@@ -105,7 +108,7 @@ func getFlow(app app.App, id string) (*Flow, error) {
 		{Key: "_id", Value: oid},
 	})
 
-	var flow Flow
+	var flow structs.Flow
 	err = result.Decode(&flow)
 	if err == mongo.ErrNoDocuments {
 		return nil, fiber.ErrNotFound
@@ -127,7 +130,7 @@ func getFlow(app app.App, id string) (*Flow, error) {
 	return &flow, nil
 }
 
-func updateFlow(app app.App, flow *Flow) error {
+func updateFlow(app app.App, flow *structs.Flow) error {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(FLOW_DB_NAME).Collection(FLOW_COLLECTION_NAME)
 
@@ -152,4 +155,29 @@ func updateFlow(app app.App, flow *Flow) error {
 	}
 
 	return nil
+}
+
+func submitFlow(app app.App, flow *structs.Flow) (*structs.Execution, error) {
+	dbClient := app.GetMongoClient()
+	coll := dbClient.Database(EXECUTION_DB_NAME).Collection(EXECUTION_COLLECTION_NAME)
+
+	execution := structs.Execution{
+		Flow:   flow,
+		Status: "FLOW_SUBMITTED",
+	}
+	data, err := bson.Marshal(execution)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.New("Unable to marshal execution data")
+	}
+
+	result, err := coll.InsertOne(context.Background(), data)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.New("Unable to save execution data")
+	}
+
+	id := result.InsertedID.(primitive.ObjectID).Hex()
+	execution.Id = id
+	return &execution, nil
 }

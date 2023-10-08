@@ -10,6 +10,7 @@ import (
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
 	"github.com/akshitbansal-1/async-testing/be/utils"
+	"github.com/akshitbansal-1/async-testing/lib/structs"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,7 +37,7 @@ func RegisterRoutes(c fiber.Router, app app.App) {
 }
 
 func (r *resource) updateFlow(c *fiber.Ctx) error {
-	var flow *Flow
+	var flow *structs.Flow
 	var err error
 	if flow, err = getFlowObject(c); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
@@ -129,7 +130,7 @@ func getFilter(c *fiber.Ctx) (*common_structs.APIFilter, error) {
 }
 
 func (r *resource) addFlow(c *fiber.Ctx) error {
-	var flow *Flow
+	var flow *structs.Flow
 	var err error
 	if flow, err = getFlowObject(c); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
@@ -149,7 +150,7 @@ func (r *resource) addFlow(c *fiber.Ctx) error {
 }
 
 func (r *resource) validateSteps(c *fiber.Ctx) error {
-	var flow *Flow
+	var flow *structs.Flow
 	var err error
 	if flow, err = getFlowObject(c); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(&common_structs.HttpError{
@@ -169,11 +170,11 @@ func (r *resource) validateSteps(c *fiber.Ctx) error {
 func (r *resource) runFlow(conn *websocket.Conn) {
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
-		data, _ := utils.ToBytes[StepResponse](StepResponse{
+		data, _ := utils.ToBytes[structs.StepResponse](structs.StepResponse{
 			"",
 			"",
-			ERROR,
-			&StepError{
+			structs.ERROR,
+			&structs.StepError{
 				Error: "Unable to parse request body",
 			},
 			"",
@@ -181,13 +182,13 @@ func (r *resource) runFlow(conn *websocket.Conn) {
 		conn.WriteMessage(websocket.TextMessage, data)
 		return
 	}
-	var flow *Flow = &Flow{}
+	var flow *structs.Flow = &structs.Flow{}
 	if err := json.Unmarshal(msg, flow); err != nil {
-		data, _ := utils.ToBytes[StepResponse](StepResponse{
+		data, _ := utils.ToBytes[structs.StepResponse](structs.StepResponse{
 			"",
 			"",
-			ERROR,
-			&StepError{
+			structs.ERROR,
+			&structs.StepError{
 				Error: "Unable to get request body",
 			},
 			"",
@@ -195,19 +196,19 @@ func (r *resource) runFlow(conn *websocket.Conn) {
 		conn.WriteMessage(websocket.TextMessage, data)
 		return
 	}
-	ch := make(chan *StepResponse)
+	ch := make(chan *structs.StepResponse)
 	go r.service.RunFlow(ch, flow)
 
 	for resp := range ch {
-		data, _ := utils.ToBytes[StepResponse](*resp)
+		data, _ := utils.ToBytes[structs.StepResponse](*resp)
 		conn.WriteMessage(websocket.TextMessage, data)
 	}
 
 	conn.Close()
 }
 
-func getFlowObject(c *fiber.Ctx) (*Flow, error) {
-	var flow Flow
+func getFlowObject(c *fiber.Ctx) (*structs.Flow, error) {
+	var flow structs.Flow
 	if err := c.BodyParser(&flow); err != nil {
 		return nil, errors.New("")
 	}
