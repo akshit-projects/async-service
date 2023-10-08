@@ -1,0 +1,9 @@
+{
+    "broker": {
+        "brokers": "localhost:9092",
+        "groupId": "flow-runners",
+        "topic": "executions",
+        "pullTimeoutMS": 100
+    },
+    "maxExecutions": 1
+}
