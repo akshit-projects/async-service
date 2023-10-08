@@ -4,7 +4,7 @@ module.exports = {
         FLOWS: '/flow',
         ADD_FLOW: '/flow/new',
         OPEN_FLOW: '/flow/:id',
-        API_PREFIX: '/flow',
+        SUITES: '/suite',
     },
 
     // FLOW

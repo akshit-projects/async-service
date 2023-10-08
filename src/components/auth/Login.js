@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "./auth-utils";
 import constants from "../../constants/constants";
 import axios from "axios";
+import './Login.css';
 const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -48,14 +49,14 @@ const Login = () => {
   return (
     <div className="center-page">
         {!token &&
-            <div style={{ display: "block", textAlign: "center" }}>
-                <h3>Login With Google</h3>
+            <div>
+                <h2 style={{textAlign: 'center'}}>Login With Google</h2>
                 <div
                     id="g_id_onload"
                     data-client_id="657098499628-hlccv6fl77gbj4srer1asb5v66l1chi6.apps.googleusercontent.com"
                     data-callback="handleCredentialResponse"
                 ></div>
-                <div className="g_id_signin" data-logo_alignment="center" data-type="standard"></div>
+                <div className="g_id_signin w-full" style={{ textAlign: 'center' }} data-logo_alignment="center" data-type="standard"></div>
                 {error && <p>{error}</p>}
             </div>
         }

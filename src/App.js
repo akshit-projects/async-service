@@ -5,6 +5,7 @@ import WorkflowBuilder from './components/flow/flow-builder/FlowBuilder';
 import { PATHS } from './constants/constants';
 import ProtectedRoutes from './components/auth/ProtectedRoutes';
 import Login from './components/auth/Login';
+import Suites from './components/test-suite/Suites';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
                 <Route path={PATHS.FLOWS} element={<Flows />} />
                 <Route path={PATHS.ADD_FLOW} element={<WorkflowBuilder />} />
                 <Route path={PATHS.OPEN_FLOW} element={<WorkflowBuilder />} />
+                <Route path={PATHS.SUITES} element={<Suites />} />
             </Route>
             
         </Routes>

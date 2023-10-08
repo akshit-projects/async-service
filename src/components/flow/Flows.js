@@ -15,6 +15,8 @@ import {
   Fab,
   Alert,
   Button,
+  TablePagination,
+  TableFooter,
 } from "@mui/material";
 import constants from "../../constants/constants";
 import CheckBox from "@mui/material/Checkbox";
@@ -26,6 +28,7 @@ function Flows() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [page, setPage] = useState(0);
   const [selectedFlows, setSelectedFlows] = useState([]);
   const [suiteModal, setSuiteModal] = useState(false);
 
@@ -56,8 +59,12 @@ function Flows() {
     getFlows();
   }, [searchQuery]);
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
   const handleRowClick = (id) => {
-    navigate(`${constants.PATHS.API_PREFIX}/${id}`);
+    navigate(`${constants.PATHS.FLOWS}/${id}`);
   };
 
   const filterResults = (query) => {
@@ -144,7 +151,6 @@ function Flows() {
               <TableRow
                 key={row.id}
                 sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
                   cursor: "pointer",
                 }}
               >
@@ -177,6 +183,24 @@ function Flows() {
               </TableRow>
             ))}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                align="right"
+                rowsPerPageOptions={[]}
+                count={data.length}
+                rowsPerPage={6}
+                page={page}
+                SelectProps={{
+                  inputProps: {
+                    "aria-label": "rows per page",
+                  },
+                  native: false,
+                }}
+                onPageChange={handleChangePage}
+              />
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
       <AddSuiteModal

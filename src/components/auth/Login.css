@@ -1,0 +1,10 @@
+iframe[id^="gsi_"] {
+    margin: 0 auto !important;
+}
+
+.center-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 212px);
+}

@@ -53,7 +53,10 @@ function Navbar() {
           {checkLoginState() && (
             <>
               <Button color="inherit" className={classes.linkButton}>
-                <Link to={constants.PATHS.FLOWS}>Flow</Link>
+                <Link to={constants.PATHS.FLOWS}>Flows</Link>
+              </Button>
+              <Button color="inherit" className={classes.linkButton}>
+                <Link to={constants.PATHS.SUITES}>Suites</Link>
               </Button>
               <Button
                 color="inherit"

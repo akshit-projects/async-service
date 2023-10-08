@@ -27,6 +27,10 @@ body {
   .pl-2 {
       padding-left: 8px;
   }
+
+  #root {
+    height: 100vh;
+  }
   
   .fs-1 {
       font-size: 10px;
