@@ -107,3 +107,11 @@ func CompareInterfaces(a, b interface{}) bool {
 		return false
 	}
 }
+
+func StructToString(data interface{}) string {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "err: " + err.Error()
+	}
+	return string(jsonData)
+}

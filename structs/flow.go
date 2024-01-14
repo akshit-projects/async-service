@@ -1,10 +1,17 @@
 package structs
 
 type StepStatus string
+type ExecutionStatusType string
 
 const (
-	SUCCESS StepStatus = "SUCCESS"
-	ERROR   StepStatus = "ERROR"
+	STEP_SUCCESS StepStatus = "SUCCESS"
+	STEP_ERROR   StepStatus = "ERROR"
+)
+
+const (
+	EXECUTION_STATUS_ERROR   ExecutionStatusType = "ERROR"
+	EXECUTION_STATUS_MESSAGE ExecutionStatusType = "MESSAGE"
+	EXECUTION_STATUS_SR      ExecutionStatusType = "SR"
 )
 
 type Flow struct {
@@ -14,7 +21,6 @@ type Flow struct {
 	Steps      []Step `json:"steps"`
 	CreatedAt  int64  `json:"createdAt"`
 	ModifiedAt int64  `json:"modifiedAt"`
-	TeamId     string `json:"teamId"`
 }
 
 type Step struct {
@@ -26,18 +32,21 @@ type Step struct {
 	Id       string      `json:"id" bson:"-"`
 }
 
-type StepError struct {
-	Expected string `json:"expected,omitempty"`
-	Actual   string `json:"actual,omitempty"`
-	Error    string `json:"error,omitempty"`
+type ExecutionStatusUpdate struct {
+	Type    ExecutionStatusType `json:"type"`
+	SR      *StepResponse       `json:"stepResponse"`
+	Message string              `json:"message"`
 }
 
 type StepResponse struct {
 	Name     string      `json:"name,omitempty"`
-	Function string      `json:"function,omitempty"`
 	Status   StepStatus  `json:"status"`
 	Response interface{} `json:"response"`
 	Id       string      `json:"id"`
 }
 
-
+type StepError struct {
+	Expected string `json:"expected,omitempty"`
+	Actual   string `json:"actual,omitempty"`
+	Error    string `json:"error,omitempty"`
+}
