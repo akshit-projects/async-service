@@ -40,40 +40,4 @@ type StepResponse struct {
 	Id       string      `json:"id"`
 }
 
-type HTTPRequest struct {
-	Url              string            `json:"url"`
-	Method           string            `json:"method"`
-	Body             interface{}       `json:"body"`
-	Headers          map[string]string `json:"headers"`
-	ExpectedStatus   string            `json:"expectedStatus" bson:"expectedStatus"`
-	ExpectedResponse string            `json:"expectedResponse" bson:"expectedResponse"`
-}
 
-type HTTPResponse struct {
-	Status   int    `json:"status"`
-	Response string `json:"response"`
-}
-
-type PublishRequest struct {
-	ProjectId string   `json:"projectId" bson:"projectId"`
-	TopicName string   `json:"topicName" bson:"topicName"`
-	Messages  []string `json:"messages"`
-}
-
-type PublishResponse struct {
-	MessageIds []string `json:"messageIds"`
-}
-
-type SubscribeRequest struct {
-	ProjectId        string `json:"projectId" bson:"projectId"`
-	SubscriptionName string `json:"subscriptionName" bson:"subscriptionName"`
-}
-
-type SubscribeResponse struct {
-	Messagess []string `json:"messagess"`
-}
-
-type PurgeSubscriptionsRequest struct {
-	ProjectId         string   `json:"projectId"`
-	SubscriptionNames []string `json:"subscriptions"`
-}
