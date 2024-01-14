@@ -171,13 +171,12 @@ func (r *resource) runFlow(conn *websocket.Conn) {
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
 		data, _ := utils.ToBytes[structs.StepResponse](structs.StepResponse{
-			"",
-			"",
-			structs.ERROR,
-			&structs.StepError{
+			Name:   "",
+			Status: structs.STEP_ERROR,
+			Response: &structs.StepError{
 				Error: "Unable to parse request body",
 			},
-			"",
+			Id: "",
 		})
 		conn.WriteMessage(websocket.TextMessage, data)
 		return
@@ -185,22 +184,21 @@ func (r *resource) runFlow(conn *websocket.Conn) {
 	var flow *structs.Flow = &structs.Flow{}
 	if err := json.Unmarshal(msg, flow); err != nil {
 		data, _ := utils.ToBytes[structs.StepResponse](structs.StepResponse{
-			"",
-			"",
-			structs.ERROR,
-			&structs.StepError{
+			Name:   "",
+			Status: structs.STEP_ERROR,
+			Response: &structs.StepError{
 				Error: "Unable to get request body",
 			},
-			"",
+			Id: "",
 		})
 		conn.WriteMessage(websocket.TextMessage, data)
 		return
 	}
-	ch := make(chan *structs.StepResponse)
+	ch := make(chan *structs.ExecutionStatusUpdate)
 	go r.service.RunFlow(ch, flow)
 
 	for resp := range ch {
-		data, _ := utils.ToBytes[structs.StepResponse](*resp)
+		data, _ := utils.ToBytes[structs.ExecutionStatusUpdate](*resp)
 		conn.WriteMessage(websocket.TextMessage, data)
 	}
 

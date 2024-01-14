@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/akshitbansal-1/async-testing/be/api/auth_apis"
+	auth_apis "github.com/akshitbansal-1/async-testing/be/api/auth"
 	experiment_apis "github.com/akshitbansal-1/async-testing/be/api/experiment"
 	flow_apis "github.com/akshitbansal-1/async-testing/be/api/flow"
 	teams_api "github.com/akshitbansal-1/async-testing/be/api/teams"

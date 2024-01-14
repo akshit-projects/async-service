@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
@@ -157,13 +158,20 @@ func updateFlow(app app.App, flow *structs.Flow) error {
 	return nil
 }
 
-func submitFlow(app app.App, flow *structs.Flow) (*structs.Execution, error) {
+func saveFlow(app app.App, flow *structs.Flow) (*structs.Execution, error) {
 	dbClient := app.GetMongoClient()
 	coll := dbClient.Database(EXECUTION_DB_NAME).Collection(EXECUTION_COLLECTION_NAME)
 
 	execution := structs.Execution{
-		Flow:   flow,
-		Status: "FLOW_SUBMITTED",
+		ExecutionFlow: &structs.ExecutionFlow{
+			Name:  flow.Name,
+			Id:    flow.Id,
+			Steps: flow.Steps,
+		},
+		Status: structs.TODO,
+		// TODO update executor, totaltimeout
+		CreatedAt:  time.Now().Unix(),
+		ModifiedAt: time.Now().Unix(),
 	}
 	data, err := bson.Marshal(execution)
 	if err != nil {

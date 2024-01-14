@@ -6,5 +6,11 @@
     },
     "experimentationServiceUrl": "http://e13n-service.moj.internal",
     "jwtSecret": "123",
-    "googleSignInClientId": ""
+    "googleSignInClientId": "",
+    "kafka": {
+        "brokers": "localhost:9092",
+        "groupId": "async-service-be",
+        "topic": "executions",
+        "pullTimeoutMS": 1000
+    }
 }
