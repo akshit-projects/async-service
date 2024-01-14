@@ -17,9 +17,15 @@ type BrokerConfiguration struct {
 	PullTimeoutMs int    `json:"pullTimeoutMS"`
 }
 
+type RedisConfiguration struct {
+	Hosts    string `json:"hosts"`
+	Password string `json:"password"`
+}
+
 type Configuration struct {
 	BrokerConfiguration BrokerConfiguration `json:"broker"`
 	MaxExecutions       int                 `json:"maxExecutions"`
+	RedisConfiguration        RedisConfiguration `json:"redisConfiguration"`
 }
 
 func NewConfig() *Configuration {

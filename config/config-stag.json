@@ -5,5 +5,9 @@
         "topic": "executions",
         "pullTimeoutMS": 100
     },
-    "maxExecutions": 1
+    "maxExecutions": 1,
+    "redisConfiguration": {
+        "hosts": "localhost:6379",
+        "password": ""
+    }
 }

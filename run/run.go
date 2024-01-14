@@ -1,4 +1,4 @@
-package executor
+package run
 
 import (
 	"bytes"
@@ -12,15 +12,21 @@ import (
 	"sync"
 	"time"
 
+	"os"
+
 	"cloud.google.com/go/pubsub"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
+	"github.com/akshitbansal-1/async-testing/lib/structs/api"
+	gcp_pubsub "github.com/akshitbansal-1/async-testing/lib/structs/gcp/pubsub"
 	"github.com/akshitbansal-1/async-testing/lib/utils"
 	"github.com/akshitbansal-1/async-testing/worker/constants"
+	ps "github.com/akshitbansal-1/async-testing/worker/pubsub"
 )
 
 // Run flow step by step
-func RunFlow(ch chan int, exec *structs.Execution) error {
-	steps := exec.Flow.Steps
+func RunFlow(ch chan int, psc ps.PubSub, exec *structs.Execution) error {
+	steps := exec.ExecutionFlow.Steps
+	pubsubTopic := "fr:" + exec.Id
 	for idx := range steps {
 		step := &steps[idx]
 		var stepResponse *structs.StepResponse
@@ -37,20 +43,29 @@ func RunFlow(ch chan int, exec *structs.Execution) error {
 			stepResponse = createDefaultErrorResponse(step, errors.New("Unsupported function"))
 		}
 
-		// ch <- stepResponse
-		if stepResponse.Status != structs.SUCCESS {
-			<-ch
+		msg, _ := json.Marshal(structs.ExecutionStatusUpdate{
+			Type:    structs.EXECUTION_STATUS_SR,
+			SR:      stepResponse,
+			Message: "",
+		})
+		psc.PublishMessage(context.Background(), pubsubTopic, string(msg))
+		if stepResponse.Status != structs.STEP_SUCCESS {
+			publishCloseMessage(psc, pubsubTopic, ch)
 			return nil
 		}
 	}
-	fmt.Println(<-ch)
-
+	publishCloseMessage(psc, pubsubTopic, ch)
 	return nil
+}
+
+func publishCloseMessage(psc ps.PubSub, pubsubTopic string, ch chan int) {
+	psc.PublishMessage(context.Background(), pubsubTopic, "close")
+	<-ch
 }
 
 // Make HTTP call
 func makeAPICall(step *structs.Step) *structs.StepResponse {
-	h := structs.HTTPRequest{}
+	h := api.HTTPRequest{}
 	_ = utils.ParseInterface(step.Meta, &h)
 	req, _ := http.NewRequest(h.Method, h.Url, nil)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -85,52 +100,50 @@ func makeAPICall(step *structs.Step) *structs.StepResponse {
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
-	stepValue := &structs.HTTPResponse{
+	stepValue := &api.HTTPResponse{
 		Status:   resp.StatusCode,
 		Response: buf.String(),
 	}
+	fmt.Println("Made API call")
 
 	if h.ExpectedStatus != "" && h.ExpectedStatus !=
 		strconv.Itoa(resp.StatusCode) {
 		return &structs.StepResponse{
-			step.Name,
-			step.Function,
-			structs.ERROR,
-			&structs.StepError{
-				h.ExpectedStatus,
-				strconv.Itoa(resp.StatusCode),
-				"Status code not matching",
+			Name:   step.Name,
+			Status: structs.STEP_ERROR,
+			Response: &structs.StepError{
+				Expected: h.ExpectedStatus,
+				Actual:   strconv.Itoa(resp.StatusCode),
+				Error:    "Status code not matching",
 			},
-			step.Id,
+			Id: step.Id,
 		}
 	}
 
 	if err = utils.CompareStrings(&stepValue.Response, &h.ExpectedResponse); err != nil {
 		return &structs.StepResponse{
-			step.Name,
-			step.Function,
-			structs.ERROR,
-			&structs.StepError{
-				h.ExpectedResponse,
-				stepValue.Response,
-				"Response not matching",
+			Name:   step.Name,
+			Status: structs.STEP_ERROR,
+			Response: &structs.StepError{
+				Expected: h.ExpectedResponse,
+				Actual:   stepValue.Response,
+				Error:    "Response not matching",
 			},
-			step.Id,
+			Id: step.Id,
 		}
 	}
 
 	return &structs.StepResponse{
-		step.Name,
-		step.Function,
-		structs.SUCCESS,
-		stepValue,
-		step.Id,
+		Name:     step.Name,
+		Status:   structs.STEP_SUCCESS,
+		Response: stepValue,
+		Id:       step.Id,
 	}
 }
 
 // Publish messages in pubsub
 func publishMessages(step *structs.Step) *structs.StepResponse {
-	publishReq := structs.PublishRequest{}
+	publishReq := gcp_pubsub.PublishRequest{}
 	_ = utils.ParseInterface(step.Meta, &publishReq)
 	projectID := publishReq.ProjectId
 	topicID := publishReq.TopicName
@@ -151,26 +164,25 @@ func publishMessages(step *structs.Step) *structs.StepResponse {
 		})
 		id, err := result.Get(ctx)
 		if err != nil {
-			fmt.Println("Failed to publish: %v", err)
+			fmt.Fprintln(os.Stdout, []any{"Failed to publish: %v", err}...)
 			return createDefaultErrorResponse(step, err)
 		}
 		messageIds = append(messageIds, id)
 	}
 
 	return &structs.StepResponse{
-		step.Name,
-		step.Function,
-		structs.SUCCESS,
-		&structs.PublishResponse{
-			messageIds,
+		Name:   step.Name,
+		Status: structs.STEP_SUCCESS,
+		Response: &gcp_pubsub.PublishResponse{
+			MessageIds: messageIds,
 		},
-		step.Id,
+		Id: step.Id,
 	}
 }
 
 // Subscribe to messages in pubsub
 func subscribeMessages(step *structs.Step) *structs.StepResponse {
-	subscribeReq := structs.SubscribeRequest{}
+	subscribeReq := gcp_pubsub.SubscribeRequest{}
 	_ = utils.ParseInterface(step.Meta, &subscribeReq)
 	projectID := subscribeReq.ProjectId
 	subscriptionID := subscribeReq.SubscriptionName
@@ -181,13 +193,12 @@ func subscribeMessages(step *structs.Step) *structs.StepResponse {
 	}
 
 	return &structs.StepResponse{
-		step.Name,
-		step.Function,
-		structs.SUCCESS,
-		&structs.SubscribeResponse{
-			msgs,
+		Name:   step.Name,
+		Status: structs.STEP_SUCCESS,
+		Response: &gcp_pubsub.SubscribeResponse{
+			Messagess: msgs,
 		},
-		step.Id,
+		Id: step.Id,
 	}
 }
 
@@ -220,7 +231,7 @@ func fetchPubsubMessages(projectID string, subscriptionID string) ([]string, err
 
 // Purge messages from given subscription names in parallel
 func purgeMessages(step *structs.Step) *structs.StepResponse {
-	purgeReq := structs.PurgeSubscriptionsRequest{}
+	purgeReq := gcp_pubsub.PurgeSubscriptionsRequest{}
 	_ = utils.ParseInterface(step.Meta, &purgeReq)
 	projectID := purgeReq.ProjectId
 
@@ -241,23 +252,21 @@ func purgeMessages(step *structs.Step) *structs.StepResponse {
 	}
 
 	return &structs.StepResponse{
-		step.Name,
-		step.Function,
-		structs.SUCCESS,
-		nil,
-		step.Id,
+		Name:     step.Name,
+		Status:   structs.STEP_SUCCESS,
+		Response: nil,
+		Id:       step.Id,
 	}
 }
 
 // Create a default step response with error object
 func createDefaultErrorResponse(step *structs.Step, err error) *structs.StepResponse {
 	return &structs.StepResponse{
-		step.Name,
-		step.Function,
-		structs.ERROR,
-		&structs.StepError{
+		Name:   step.Name,
+		Status: structs.STEP_ERROR,
+		Response: &structs.StepError{
 			Error: err.Error(),
 		},
-		step.Id,
+		Id: step.Id,
 	}
 }
