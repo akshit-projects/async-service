@@ -30,12 +30,7 @@ type Step struct {
 	Meta     interface{} `json:"meta"`
 	Value    interface{} `json:"value" bson:"-"`
 	Id       string      `json:"id" bson:"-"`
-}
-
-type ExecutionStatusUpdate struct {
-	Type    ExecutionStatusType `json:"type"`
-	SR      *StepResponse       `json:"stepResponse"`
-	Message string              `json:"message"`
+	Timeout  int         `json:"timeout" bson:"timeout"`
 }
 
 type StepResponse struct {

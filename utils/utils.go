@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"reflect"
+	"time"
 )
 
 func ParseInterface[T any](i interface{}, v *T) error {
@@ -114,4 +116,22 @@ func StructToString(data interface{}) string {
 		return "err: " + err.Error()
 	}
 	return string(jsonData)
+}
+
+func Race(ctx context.Context, f func(), timeoutMS int) bool {
+	timer, cancel := context.WithTimeout(ctx, time.Duration(timeoutMS)*time.Millisecond)
+	defer cancel()
+
+	completionSignal := make(chan int, 1)
+	go func() {
+		f()
+		completionSignal <- 1
+	}()
+
+	select {
+	case <-timer.Done():
+		return true
+	case <-completionSignal:
+		return false
+	}
 }
