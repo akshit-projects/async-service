@@ -5,13 +5,10 @@ import (
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
-	thirdparty "github.com/akshitbansal-1/async-testing/be/third_party"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
 	"github.com/akshitbansal-1/async-testing/lib/utils"
 	validators "github.com/akshitbansal-1/async-testing/lib/validators"
 )
-
-var logger = thirdparty.Logger
 
 type Service interface {
 	AddFlow(flow *structs.Flow) (*string, error)
@@ -66,7 +63,7 @@ func (s *service) ValidateSteps(flow *structs.Flow) error {
 }
 
 func (s *service) RunFlow(ch chan<- *structs.ExecutionStatusUpdate, flow *structs.Flow) error {
-	logger.Info("Running a flow", utils.StructToString(*flow))
+	logger.Info("Running a flow: ", utils.StructToString(*flow))
 	if err := validators.ValidateSteps(flow.Steps); err != nil {
 		ch <- &structs.ExecutionStatusUpdate{
 			Type:    "error",
@@ -78,6 +75,8 @@ func (s *service) RunFlow(ch chan<- *structs.ExecutionStatusUpdate, flow *struct
 	}
 
 	_, err := StartFlow(ch, s.app, flow)
-	// TODO start polling the status
+	if err != nil {
+		close(ch)
+	}
 	return err
 }

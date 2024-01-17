@@ -10,6 +10,7 @@ import (
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
+	"github.com/akshitbansal-1/async-testing/lib/utils"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -168,20 +169,26 @@ func saveFlow(app app.App, flow *structs.Flow) (*structs.Execution, error) {
 			Id:    flow.Id,
 			Steps: flow.Steps,
 		},
-		Status: structs.TODO,
-		// TODO update executor, totaltimeout
-		CreatedAt:  time.Now().Unix(),
-		ModifiedAt: time.Now().Unix(),
+		Status:       structs.EXECUTION_TODO,
+		TotalTimeout: getTotalStepsTimeout(flow.Steps),
+		CreatedAt:    time.Now().Unix(),
+		ModifiedAt:   time.Now().Unix(),
 	}
 	data, err := bson.Marshal(execution)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, errors.New("Unable to marshal execution data")
 	}
+	var result *mongo.InsertOneResult
+	timedOut := utils.Race(context.Background(), func() {
+		result, err = coll.InsertOne(context.Background(), data)
+	}, 1000)
+	if timedOut {
+		return nil, errors.New("Unable to save execution to mongo. API timed out.")
+	}
 
-	result, err := coll.InsertOne(context.Background(), data)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Error("Error while saving execution in mongo", err.Error())
 		return nil, errors.New("Unable to save execution data")
 	}
 

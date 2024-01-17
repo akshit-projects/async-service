@@ -1,7 +1,9 @@
 package thirdparty
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/akshitbansal-1/async-testing/be/config"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
+	"github.com/akshitbansal-1/async-testing/lib/utils"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -43,7 +46,7 @@ func InitBroker(config *config.Configuration) MessageBroker {
 func (k *broker) PushExecution(config *config.Configuration, exec *structs.Execution) error {
 	bytes, err := json.Marshal(exec)
 	if err != nil {
-		fmt.Println("Invalid exec data")
+		Logger.Error("Invalid execution data ", utils.StructToString(*exec))
 		return err
 	}
 
@@ -52,8 +55,18 @@ func (k *broker) PushExecution(config *config.Configuration, exec *structs.Execu
 		Value:          bytes,
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 	}
-	delivery_chan := make(chan kafka.Event, 10000)
-	return k.producer.Produce(msg, delivery_chan)
+
+	completionSignal := make(chan kafka.Event, 1)
+	isTimedout := utils.Race(context.Background(), func() {
+		err = k.producer.Produce(msg, completionSignal)
+		<-completionSignal
+	}, 1000)
+
+	if isTimedout {
+		return errors.New("Unable to publish execution flow to kafka. API timed out")
+	}
+
+	return err
 }
 
 func setupShutdown() chan os.Signal {
