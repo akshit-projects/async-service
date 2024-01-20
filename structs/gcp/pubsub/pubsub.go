@@ -16,7 +16,7 @@ type SubscribeRequest struct {
 }
 
 type SubscribeResponse struct {
-	Messagess []string `json:"messagess"`
+	Messages []string `json:"messagess"`
 }
 
 type PurgeSubscriptionsRequest struct {

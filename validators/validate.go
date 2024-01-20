@@ -2,12 +2,13 @@ package validators
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/akshitbansal-1/async-testing/lib/constants"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
 	api_validator "github.com/akshitbansal-1/async-testing/lib/validators/api"
-	gcp_pubsub "github.com/akshitbansal-1/async-testing/lib/validators/gcp/pubsub"
+	kafka "github.com/akshitbansal-1/async-testing/lib/validators/kafka"
 )
 
 func ValidateSteps(steps []structs.Step) error {
@@ -27,15 +28,14 @@ func ValidateSteps(steps []structs.Step) error {
 }
 
 func ValidateStep(step *structs.Step) error {
+	fmt.Println(step.Function)
 	switch step.Function {
-	case constants.API_STEP:
+	case constants.HTTP_API_STEP:
 		return api_validator.ValidateHttpStep(step)
-	case constants.PUBLISH_MESSAGE_STEP:
-		return gcp_pubsub.ValidatePubsubPublish(step)
-	case constants.SUBSCRIBE_MESSAGES_STEP:
-		return gcp_pubsub.ValidatePubsubSubscribe(step)
-	case "purge-subscriptions":
-		return gcp_pubsub.ValidatePurgeSubscriptions(step)
+	case constants.PUBLISH_KAFKA_MESSAGE_STEP:
+		return kafka.ValidatePublishRequest(step)
+	case constants.SUBSCRIBE_KAFKA_MESSAGES_STEP:
+		return kafka.ValidateSubscribeRequest(step)
 	default:
 		return errors.New("Unsupported function")
 	}

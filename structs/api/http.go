@@ -10,6 +10,7 @@ type HTTPRequest struct {
 }
 
 type HTTPResponse struct {
-	Status   int    `json:"status"`
-	Response string `json:"response"`
+	Status   int                    `json:"status"`
+	Response string                 `json:"response"`
+	Headers  map[string]interface{} `json:"headers"`
 }

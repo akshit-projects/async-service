@@ -1,7 +1,7 @@
 package constants
 
 const (
-	API_STEP                = "api"
-	PUBLISH_MESSAGE_STEP    = "publish-message"
-	SUBSCRIBE_MESSAGES_STEP = "messages-subscription"
+	HTTP_API_STEP                 = "api"
+	PUBLISH_KAFKA_MESSAGE_STEP    = "publish-kafka-message"
+	SUBSCRIBE_KAFKA_MESSAGES_STEP = "subscribe-kafka-topic"
 )
