@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/akshitbansal-1/async-testing/lib/structs"
+	"github.com/akshitbansal-1/async-testing/lib/utils"
 	"github.com/akshitbansal-1/async-testing/worker/config"
 	"github.com/akshitbansal-1/async-testing/worker/pubsub"
 	"github.com/akshitbansal-1/async-testing/worker/run"
@@ -18,13 +19,15 @@ type Scheduler interface {
 
 type scheduler struct {
 	maxExecutions int
-	pubsubClient pubsub.PubSub
+	pubsubClient  pubsub.PubSub
 }
 
 func (s *scheduler) ProcessMessage(km []byte) error {
 	var exec structs.Execution
+	fmt.Println(string(km))
 	err := json.Unmarshal(km, &exec)
 	if err != nil {
+		fmt.Println("error while debugging")
 		return err
 	}
 
@@ -32,6 +35,8 @@ func (s *scheduler) ProcessMessage(km []byte) error {
 	if r := recover(); r != nil {
 		fmt.Println("Recovered")
 	}
+
+	fmt.Println(utils.StructToString(exec))
 
 	run.RunFlow(schedules, s.pubsubClient, &exec)
 

@@ -3,7 +3,7 @@
         "brokers": "localhost:9092",
         "groupId": "flow-runners",
         "topic": "executions",
-        "pullTimeoutMS": 100
+        "pullTimeoutMS": 1000
     },
     "maxExecutions": 1,
     "redisConfiguration": {
