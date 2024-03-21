@@ -3,7 +3,6 @@ package run_kafka
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -92,6 +91,8 @@ func ConsumeMessages(step *structs.Step) *structs.StepResponse {
 
 	if request.FromBeginning {
 		config.SetKey("auto.offset.reset", kafka.OffsetBeginning.String())
+	} else {
+		config.SetKey("auto.offset.reset", "earliest")
 	}
 
 	// Create Kafka consumer
@@ -115,7 +116,6 @@ func ConsumeMessages(step *structs.Step) *structs.StepResponse {
 		i := 0
 		startTime := time.Now().UnixMilli()
 		for {
-			fmt.Println("reading a message")
 			if i >= request.MaxMessages {
 				break
 			}
@@ -123,7 +123,7 @@ func ConsumeMessages(step *structs.Step) *structs.StepResponse {
 				break
 			}
 			i += 1
-			msg, err := consumer.ReadMessage(time.Second * 2)
+			msg, err := consumer.ReadMessage(time.Second * time.Duration(step.Timeout))
 			if err != nil {
 				if err.(kafka.Error).Code() == kafka.ErrTimedOut {
 					continue
@@ -132,6 +132,7 @@ func ConsumeMessages(step *structs.Step) *structs.StepResponse {
 				logger.Error("Error while reading kafka messages: ", err)
 				break
 			}
+			consumer.Commit()
 			messages = append(messages, kafka_struct.KafkaMessage{
 				Value: string(msg.Value),
 				Key:   string(msg.Key),

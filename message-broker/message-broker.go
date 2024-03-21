@@ -45,7 +45,7 @@ func InitConsumer(config *config.Configuration, sc scheduler.Scheduler) {
 			ev, err := c.ReadMessage(time.Duration(pullTimeout) * time.Millisecond)
 			if err != nil {
 				if err.(kafka.Error).Code() == kafka.ErrTimedOut {
-					logger.Info("No new message found")
+					// logger.Info("No new message found")
 					continue
 				}
 				logger.Error("Error while reading message from kafka: " + err.Error())

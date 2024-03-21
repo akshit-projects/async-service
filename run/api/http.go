@@ -50,7 +50,7 @@ func MakeAPICall(step *structs.Step) *structs.StepResponse {
 		if errors.Is(err, context.DeadlineExceeded) {
 			err = errors.New("Request timed out")
 		}
-		return worker_utils.CreateDefaultErrorResponse(step, err)
+		return worker_utils.CreateDefaultErrorResponseV2(step, err, "Invalid URL", "Valid URL")
 	}
 
 	defer resp.Body.Close()

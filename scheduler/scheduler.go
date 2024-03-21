@@ -24,7 +24,6 @@ type scheduler struct {
 
 func (s *scheduler) ProcessMessage(km []byte) error {
 	var exec structs.Execution
-	fmt.Println(string(km))
 	err := json.Unmarshal(km, &exec)
 	if err != nil {
 		fmt.Println("error while debugging")
