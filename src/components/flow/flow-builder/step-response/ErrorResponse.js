@@ -4,10 +4,10 @@ import React from "react";
 
 Modal.setAppElement("#root");
 export default function ErrorResponse(props) {
-  const response = props.response;
+  const response = props.response || {};
   const isModalOpen = props.isModalOpen;
   const closeRequest = props.closeRequest;
-  
+  console.log(response.response);
   if (!response.actual) {
     const value = JSON.stringify(response.error || '');
     return (

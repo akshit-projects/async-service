@@ -9,7 +9,7 @@ import {
   Button,
 } from "@mui/material";
 import { InputLabel, makeStyles } from "@material-ui/core";
-import constants from "../../../constants/constants";
+import constants from "../../../../constants/constants";
 
 const TYPE = constants.FLOW_FUNCTIONS.API;
 const useStyles = makeStyles((theme) => ({

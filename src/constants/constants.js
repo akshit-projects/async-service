@@ -13,10 +13,12 @@ module.exports = {
         API: 'api',
         PUBLISH_MESSAGE: 'publish-message',
         MESSAGES_SUBSCRIPTION: 'messages-subscription',
+        PUBLISH_KAFKA_MESSAGE: 'publish-kafka-message',
+        SUBSCRIBE_KAFKA_TOPIC: 'subscribe-kafka-topic'
     },
     FLOW_RESPONSE_STATES: {
         PROGRESS: 'PROGRESS',
-        ERROR: 'ERROR',
+        ERROR: 'error',
         SUCCESS: 'SUCCESS',
     },
     FLOW_NEW_PATH_SUFFIX: 'new',

@@ -95,9 +95,17 @@ function Flows() {
     }
   };
 
+  const openAddFlow = (event) => {
+    navigate(constants.PATHS.ADD_FLOW);
+  }
+
   return (
     <Container>
-      <Grid container spacing={1} alignItems="center">
+        
+      <Grid container spacing={2} alignItems="center" marginTop={2}>
+        <Grid item xs={1.5}>
+            <h1>Flows</h1>
+        </Grid>
         <Grid item xs={4}>
           <TextField
             label="Search"
@@ -106,8 +114,8 @@ function Flows() {
             onChange={(e) => filterResults(e.target.value)}
           />
         </Grid>
-        {selectedFlows.length ? (
-          <Grid xs={2} sx={{ verticalAlign: "middle" }}>
+        {selectedFlows.length ? ( // todo move it out of here
+          <Grid xs={1} sx={{ verticalAlign: "middle" }}>
             <Button variant="contained" onClick={addTestSuite}>
               Create Test Suite
             </Button>
@@ -117,17 +125,18 @@ function Flows() {
         )}
         <Grid
           item
-          xs={6 + (selectedFlows.length ? 0 : 2)}
+          xs={6.5}
           style={{ textAlign: "right" }}
         >
-          <Fab
+          {/* <Fab // TODO fix this
             color="primary"
             aria-label="Add"
             component={Link}
             to={constants.PATHS.ADD_FLOW}
           >
             <i className="material-icons fs-4">add</i>
-          </Fab>
+          </Fab> */}
+          <Button variant="contained" onClick={openAddFlow}>Add Flow</Button>
         </Grid>
       </Grid>
       {error && (

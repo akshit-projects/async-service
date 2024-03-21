@@ -23,10 +23,14 @@ function validateStep(step) {
   switch (step.function) {
     case constants.FLOW_FUNCTIONS.API:
       return validateHttpStep(step);
-    case constants.FLOW_FUNCTIONS.PUBLISH_MESSAGE:
-      return validatePubsubPublish(step);
-    case constants.FLOW_FUNCTIONS.MESSAGES_SUBSCRIPTION:
-      return validatePubsubSubscribe(step);
+    // case constants.FLOW_FUNCTIONS.PUBLISH_MESSAGE:
+    //   return validatePubsubPublish(step);
+    // case constants.FLOW_FUNCTIONS.MESSAGES_SUBSCRIPTION:
+    //   return validatePubsubSubscribe(step);
+    case constants.FLOW_FUNCTIONS.PUBLISH_KAFKA_MESSAGE:
+      return validateKafkaPublishMessage(step);
+      case constants.FLOW_FUNCTIONS.SUBSCRIBE_KAFKA_TOPIC:
+        return validateKafkaSubscribeTopic(step);
     default:
       return new Error("Invalid step function");
   }
@@ -54,7 +58,6 @@ function validatePubsubSubscribe(step) {
 // Pubsub publish validation block
 function validatePubsubPublish(step) {
   const publishRequest = step.meta;
-
   if (!publishRequest) {
     return new Error("Unable to get publish request data");
   }
@@ -73,6 +76,51 @@ function validatePubsubPublish(step) {
 
   return null;
 }
+
+// Kafka publish validation block
+function validateKafkaPublishMessage(step) {
+    const publishRequest = step.meta;
+    console.log(publishRequest);
+  
+    if (!publishRequest) {
+      return new Error("Unable to get kafka publish message request data");
+    }
+  
+    if (!publishRequest.kafkaConfig) {
+      return new Error("Kafka cluster required for publishing message.");
+    }
+  
+    if (!publishRequest.topicName) {
+      return new Error("Topic name is required for kafka publish request");
+    }
+  
+    if (publishRequest.messages.length === 0) {
+      return new Error("At least one message is required for kafka publish request");
+    }
+  
+    return null;
+}
+
+
+// Kafka subscription validation block
+function validateKafkaSubscribeTopic(step) {
+    const subscribeRequest = step.meta;
+    console.log(subscribeRequest);
+  
+    if (!subscribeRequest) {
+      return new Error("Unable to get kafka publish message request data");
+    }
+  
+    if (!subscribeRequest.kafkaConfig) {
+      return new Error("Kafka cluster required for publishing message.");
+    }
+  
+    if (!subscribeRequest.topicName) {
+      return new Error("Topic name is required for kafka subscribe request");
+    }
+  
+    return null;
+  }
 
 // HTTP validation block
 function validateHttpStep(step) {

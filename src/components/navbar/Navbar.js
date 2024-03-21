@@ -8,7 +8,7 @@ import { checkLoginState, logout } from "../auth/auth-utils";
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
-    "max-width": "80%",
+    "max-width": "100%",
     margin: "auto",
     height: "68px",
   },
@@ -22,6 +22,10 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(1, 2),
     fontSize: "12px",
     fontFamily: "helvetica",
+  },
+  innerBar: {
+    width: '80%',
+    margin: 'auto'
   },
 }));
 
@@ -45,10 +49,10 @@ function Navbar() {
         style={{
           backgroundColor: "#ffffff",
           color: "#000000",
-          boxShadow: "none",
+          boxShadow: "0 4px 2px -2px rgba(0,0,0,.2);",
         }}
       >
-        <Toolbar>
+        <Toolbar className={classes.innerBar}>
           <Typography className={classes.title}>Akshit Helper</Typography>
           {checkLoginState() && (
             <>

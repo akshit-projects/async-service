@@ -43,7 +43,7 @@ export default function StepResponse(props) {
   } else if (status === constants.FLOW_RESPONSE_STATES.ERROR) {
     render = <>
         <i className="material-icons step-status close" onClick={click}>close</i>
-        <ErrorResponse isModalOpen={isModalOpen} closeRequest={closeRequest} response={response} />
+        <ErrorResponse isModalOpen={isModalOpen} closeRequest={closeRequest} response={response?.response} />
     </>
   } else {
     render = <></>;

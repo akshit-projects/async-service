@@ -7,7 +7,7 @@ import FlowStep from "./FlowStep";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import StepResponse from "./step-response/StepResponse";
-import constants from "../../../constants/constants";
+import constants, { FLOW_FUNCTIONS } from "../../../constants/constants";
 import { validateSteps } from "./util";
 
 Modal.setAppElement("#root");
@@ -22,6 +22,7 @@ const WorkflowBuilder = () => {
   const navigate = useNavigate();
   const [flowId, setFlowId] = useState("");
 
+  // if it's an existing flow, get it's data
   useEffect(() => {
     const pathArr = location.pathname.split("/");
     if (pathArr[2] !== constants.FLOW_NEW_PATH_SUFFIX) {
@@ -111,6 +112,7 @@ const WorkflowBuilder = () => {
         function: step.functionType,
         meta: step.value[step.functionType],
         id: step.id || uuidv4(),
+        timeout: 10000
       };
     });
     const payload = {
@@ -201,36 +203,47 @@ const WorkflowBuilder = () => {
     socket.onmessage = (msg) => {
       try {
         const data = JSON.parse(msg.data);
-        // most probably validation error
-        if (data.status === constants.FLOW_RESPONSE_STATES.ERROR && !data.id) {
-          setError(data.response.error);
+        // most probably validation error or a generic error
+        if (data.type === constants.FLOW_RESPONSE_STATES.ERROR && !data.stepResponse) {
+          setError(data.message);
           setDisableFlowActions(false);
           socket.close();
           return;
         } else if (data.status === constants.FLOW_RESPONSE_STATES.ERROR) {
+          // this is a step level error
+          const stepResponse = data.stepResponse;
           // id is present, so this is an step
           const stepIdx = steps.findIndex((step) => {
-            return step.id === data.id;
+            return step.id === stepResponse.id;
           });
           if (stepIdx !== -1) {
             updateStep(stepIdx, "state", {
               status: constants.FLOW_RESPONSE_STATES.ERROR,
-              response: data.response,
+              response: stepResponse,
             });
           } else {
             setError("Invalid state, please try again.");
           }
           socket.close();
         } else {
+          const stepResponse = data.stepResponse;  
           // a successful step
           const stepIdx = steps.findIndex((step) => {
-            return step.id === data.id;
+            return step.id === stepResponse.id;
           });
           if (stepIdx !== -1) {
-            updateStep(stepIdx, "state", {
-              status: constants.FLOW_RESPONSE_STATES.SUCCESS,
-              response: data.response,
-            });
+            if (stepResponse.status === "ERROR") {
+                updateStep(stepIdx, "state", {
+                    status: constants.FLOW_RESPONSE_STATES.ERROR,
+                    response: stepResponse,
+                });
+            } else {
+                updateStep(stepIdx, "state", {
+                    status: constants.FLOW_RESPONSE_STATES.SUCCESS,
+                    response: stepResponse,
+                });
+            }
+            
           } else {
             setError("Invalid state, please try again.");
           }
@@ -248,7 +261,7 @@ const WorkflowBuilder = () => {
 
   return (
     <div className="workflow-builder">
-      <h2>Flow Builder</h2>
+      <h1 style={{ alignSelf: 'start', margin: '1.4em !important'}}>Flow Builder</h1>
       <div className="workflow-header">
         <TextField
           label="Flow name"
@@ -277,7 +290,7 @@ const WorkflowBuilder = () => {
             <div onClick={(e) => openModal(index)}>
               <span className="step-index">Step {index + 1}</span>
               <span className="step-function">
-                {step.functionType || "Unset"}
+                {step.functionType || "Not Set"}
               </span>
               <StepResponse state={step.state} />
             </div>
