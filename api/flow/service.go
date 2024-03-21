@@ -5,6 +5,7 @@ import (
 
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
+	"github.com/akshitbansal-1/async-testing/lib/manager"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
 	"github.com/akshitbansal-1/async-testing/lib/utils"
 	validators "github.com/akshitbansal-1/async-testing/lib/validators"
@@ -14,7 +15,7 @@ type Service interface {
 	AddFlow(flow *structs.Flow) (*string, error)
 	UpdateFlow(flow *structs.Flow) error
 	ValidateSteps(flow *structs.Flow) error
-	RunFlow(ch chan<- *structs.ExecutionStatusUpdate, flow *structs.Flow) error
+	RunFlow(ch manager.Channel[*structs.ExecutionStatusUpdate], flow *structs.Flow) error
 	GetFlows(*common_structs.APIFilter) ([]structs.Flow, error)
 	GetFlow(id string) (*structs.Flow, error)
 }
@@ -62,21 +63,21 @@ func (s *service) ValidateSteps(flow *structs.Flow) error {
 	return err
 }
 
-func (s *service) RunFlow(ch chan<- *structs.ExecutionStatusUpdate, flow *structs.Flow) error {
+func (s *service) RunFlow(ch manager.Channel[*structs.ExecutionStatusUpdate], flow *structs.Flow) error {
 	logger.Info("Running a flow: ", utils.StructToString(*flow))
 	if err := validators.ValidateSteps(flow.Steps); err != nil {
-		ch <- &structs.ExecutionStatusUpdate{
+		ch.PushToChan(&structs.ExecutionStatusUpdate{
 			Type:    "error",
 			SR:      nil,
 			Message: "Invalid steps data. " + err.Error(),
-		}
-		close(ch)
+		})
+		ch.CloseChannel()
 		return nil
 	}
 
 	_, err := StartFlow(ch, s.app, flow)
 	if err != nil {
-		close(ch)
+		ch.CloseChannel()
 	}
 	return err
 }

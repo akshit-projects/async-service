@@ -10,6 +10,7 @@ import (
 	"github.com/akshitbansal-1/async-testing/be/app"
 	"github.com/akshitbansal-1/async-testing/be/common_structs"
 	"github.com/akshitbansal-1/async-testing/be/utils"
+	"github.com/akshitbansal-1/async-testing/lib/manager"
 	"github.com/akshitbansal-1/async-testing/lib/structs"
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -194,10 +195,10 @@ func (r *resource) runFlow(conn *websocket.Conn) {
 		conn.WriteMessage(websocket.TextMessage, data)
 		return
 	}
-	ch := make(chan *structs.ExecutionStatusUpdate)
+	ch := manager.NewChannel[*structs.ExecutionStatusUpdate](0)
 	go r.service.RunFlow(ch, flow)
 
-	for resp := range ch {
+	for resp := range ch.GetChannel() {
 		data, _ := utils.ToBytes[structs.ExecutionStatusUpdate](*resp)
 		conn.WriteMessage(websocket.TextMessage, data)
 	}
